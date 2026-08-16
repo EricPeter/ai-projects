@@ -1,0 +1,22 @@
+[
+  {"id": "q01", "question": "How many days of annual leave do full-time employees receive?", "ground_truth": "Full-time employees accrue 15 days of paid annual leave per calendar year.", "expected_pages": [1]},
+  {"id": "q02", "question": "Can unused annual leave be rolled over to the next year?", "ground_truth": "No. Only up to 5 unused days roll over; excess days are forfeited.", "expected_pages": [1]},
+  {"id": "q03", "question": "How many sick days are employees entitled to?", "ground_truth": "Employees are entitled to 10 days of paid sick leave per year.", "expected_pages": [1]},
+  {"id": "q04", "question": "When is a medical certificate required for sick leave?", "ground_truth": "A medical certificate is required for absences exceeding 3 consecutive days.", "expected_pages": [1]},
+  {"id": "q05", "question": "How long is parental leave for the primary caregiver?", "ground_truth": "Primary caregivers receive 16 weeks of fully paid parental leave.", "expected_pages": [1]},
+  {"id": "q06", "question": "How long is parental leave for the secondary caregiver?", "ground_truth": "Secondary caregivers receive 4 weeks of fully paid parental leave.", "expected_pages": [1]},
+  {"id": "q07", "question": "How many public holidays are employees entitled to?", "ground_truth": "Employees are entitled to all 12 South African public holidays.", "expected_pages": [1]},
+  {"id": "q08", "question": "What is the pay rate for working on a public holiday?", "ground_truth": "Employees required to work on a public holiday receive double pay for hours worked.", "expected_pages": [1]},
+  {"id": "q09", "question": "Who is eligible for remote work?", "ground_truth": "Employees who have completed their 6-month probationary period are eligible, subject to manager approval.", "expected_pages": [1]},
+  {"id": "q10", "question": "How much can remote workers claim for internet expenses?", "ground_truth": "Employees may claim up to R500 per month for internet expenses on submission of an invoice.", "expected_pages": [1]},
+  {"id": "q11", "question": "What are the core hours for remote employees?", "ground_truth": "Remote employees must be online between 09:00 and 15:00 SAST, Monday to Friday.", "expected_pages": [1]},
+  {"id": "q12", "question": "How often are performance reviews conducted?", "ground_truth": "Performance reviews are conducted twice per year: in June and in December.", "expected_pages": [1]},
+  {"id": "q13", "question": "What is the performance rating scale?", "ground_truth": "Performance is rated on a 5-point scale from 1 (Unsatisfactory) to 5 (Outstanding).", "expected_pages": [1]},
+  {"id": "q14", "question": "Which employees are eligible for a salary increase?", "ground_truth": "Employees rated 3 or above are eligible for an annual salary increase.", "expected_pages": [1]},
+  {"id": "q15", "question": "Does ACME provide equipment for remote work?", "ground_truth": "Yes. ACME provides a laptop and peripherals for remote work.", "expected_pages": [1]},
+  {"id": "q16", "question": "Can sick leave be converted to cash?", "ground_truth": "No. Sick leave cannot be converted to cash.", "expected_pages": [1]},
+  {"id": "q17", "question": "Within what period must parental leave be taken?", "ground_truth": "Parental leave must be taken within 12 months of the child's birth or adoption.", "expected_pages": [1]},
+  {"id": "q18", "question": "How is part-time employee leave calculated?", "ground_truth": "Part-time employees accrue leave on a pro-rata basis.", "expected_pages": [1]},
+  {"id": "q19", "question": "Who determines the salary increase percentage?", "ground_truth": "The increase percentage is determined by the executive team based on company performance and individual rating.", "expected_pages": [1]},
+  {"id": "q20", "question": "What is the maximum number of annual leave days that can roll over?", "ground_truth": "Up to 5 unused days of annual leave can roll over to the next year.", "expected_pages": [1]}
+]

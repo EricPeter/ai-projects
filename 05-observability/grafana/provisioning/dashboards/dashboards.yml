@@ -1,0 +1,6 @@
+apiVersion: 1
+providers:
+  - name: AI Dashboards
+    type: file
+    options:
+      path: /etc/grafana/provisioning/dashboards

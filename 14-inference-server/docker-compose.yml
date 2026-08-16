@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  vllm-1:
+    image: vllm/vllm-openai:latest
+    command: ["--model", "facebook/opt-125m", "--port", "8080", "--max-model-len", "2048"]
+    ports:
+      - "8080:8080"
+    volumes:
+      - hf_cache:/root/.cache/huggingface
+    restart: unless-stopped
+
+  vllm-2:
+    image: vllm/vllm-openai:latest
+    command: ["--model", "facebook/opt-125m", "--port", "8080", "--max-model-len", "2048"]
+    ports:
+      - "8081:8080"
+    volumes:
+      - hf_cache:/root/.cache/huggingface
+    restart: unless-stopped
+
+  proxy:
+    build: .
+    ports:
+      - "8014:8000"
+    env_file: .env
+    environment:
+      VLLM_INSTANCE_1: http://vllm-1:8080
+      VLLM_INSTANCE_2: http://vllm-2:8080
+    depends_on: [vllm-1, vllm-2]
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9091:9090"
+    restart: unless-stopped
+
+volumes:
+  hf_cache:

@@ -1,0 +1,18 @@
+[project]
+name = "local-dev-env"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.111.0",
+    "uvicorn[standard]>=0.29.0",
+    "lancedb>=0.8.0",
+    "sentence-transformers>=3.0.0",
+    "pypdf>=4.2.0",
+    "ollama>=0.2.0",
+    "python-multipart>=0.0.9",
+    "pydantic>=2.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

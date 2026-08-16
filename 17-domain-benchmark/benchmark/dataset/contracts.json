@@ -1,0 +1,27 @@
+[
+  {
+    "id": "c01",
+    "text": "This Service Agreement ('Agreement') is entered into as of 1 January 2025 between ACME Corp ('Service Provider') and Beta Ltd ('Client'). Either party may terminate this Agreement upon 30 days written notice. In no event shall Service Provider be liable for indirect, incidental, or consequential damages. Service Provider's total liability shall not exceed the fees paid in the preceding 3 months.",
+    "ground_truth": {"parties": ["ACME Corp", "Beta Ltd"], "termination_notice_days": 30, "liability_cap": "fees paid in preceding 3 months", "excludes_indirect_damages": true}
+  },
+  {
+    "id": "c02",
+    "text": "Consulting Agreement dated 15 March 2025 between Sunrise Consulting ('Consultant') and MegaCorp ('Company'). This Agreement may be terminated by either party for convenience on 14 days notice, or immediately for material breach. Consultant's liability is capped at R100,000 in aggregate. All intellectual property created under this Agreement vests in the Company.",
+    "ground_truth": {"parties": ["Sunrise Consulting", "MegaCorp"], "termination_notice_days": 14, "liability_cap": "R100,000", "ip_ownership": "Company"}
+  },
+  {
+    "id": "c03",
+    "text": "Software License Agreement between TechVentures ('Licensor') and StartupXYZ ('Licensee') effective 1 June 2025. License fee: R5,000 per month. Term: 12 months, auto-renewing. Licensor warrants that the software will perform materially as described for 90 days. Licensee shall not sublicense or resell the software.",
+    "ground_truth": {"parties": ["TechVentures", "StartupXYZ"], "monthly_fee": 5000, "term_months": 12, "warranty_days": 90, "sublicense_permitted": false}
+  },
+  {
+    "id": "c04",
+    "text": "Non-Disclosure Agreement between DataSafe ('Disclosing Party') and AnalyticsCo ('Receiving Party'). Confidential information must be held in strict confidence for 5 years. Permitted disclosures: employees on a need-to-know basis. Receiving Party must notify Disclosing Party within 48 hours of any suspected breach.",
+    "ground_truth": {"parties": ["DataSafe", "AnalyticsCo"], "confidentiality_period_years": 5, "breach_notification_hours": 48}
+  },
+  {
+    "id": "c05",
+    "text": "Employment Contract: Jane Smith ('Employee') joins GlobalCorp ('Employer') on 1 February 2025 as Senior Engineer, salary R85,000 per month, 21 days annual leave, 6-month probation. Either party may terminate during probation on 1 week notice. Post-probation notice: 1 month.",
+    "ground_truth": {"employee": "Jane Smith", "employer": "GlobalCorp", "monthly_salary": 85000, "annual_leave_days": 21, "probation_months": 6, "probation_notice_weeks": 1, "post_probation_notice_months": 1}
+  }
+]

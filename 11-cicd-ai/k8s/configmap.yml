@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ai-service-config
+  namespace: ai-service
+data:
+  ENABLE_NEW_MODEL: "false"
+  ENABLE_STREAMING: "true"
+  ENABLE_CACHING: "true"
+  LOG_LEVEL: "info"
