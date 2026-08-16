@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
 echo "=== Running AI Eval Harness ==="
 uv run pytest tests/ -v --tb=short
 

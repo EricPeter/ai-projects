@@ -1,4 +1,3 @@
-"""Inserts 10k random vectors and measures QPS at different k values."""
 import time
 import random
 import uuid

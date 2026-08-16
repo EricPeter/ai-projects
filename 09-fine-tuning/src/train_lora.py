@@ -1,4 +1,3 @@
-"""LoRA fine-tuning on facebook/opt-125m (fast, CPU-runnable for demo)."""
 import json
 import os
 from pathlib import Path

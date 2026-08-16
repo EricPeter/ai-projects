@@ -1,4 +1,3 @@
-"""Tests that tenant data is strictly isolated."""
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport

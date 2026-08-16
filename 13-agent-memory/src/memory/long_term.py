@@ -1,4 +1,3 @@
-"""Long-term memory using Qdrant. Stores extracted facts per user."""
 import os
 import uuid
 from datetime import datetime, timezone, timedelta

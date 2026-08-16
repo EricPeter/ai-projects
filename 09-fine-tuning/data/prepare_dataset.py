@@ -1,4 +1,3 @@
-"""Generate instruction-tuning dataset for customer support domain."""
 import json
 from pathlib import Path
 

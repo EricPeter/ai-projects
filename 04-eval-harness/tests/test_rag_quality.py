@@ -1,8 +1,3 @@
-"""
-Golden-dataset eval suite. Run with: uv run pytest tests/ -v
-
-Requires ANTHROPIC_API_KEY and OPENAI_API_KEY (DeepEval uses OpenAI as judge).
-"""
 import json
 import os
 from pathlib import Path

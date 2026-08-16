@@ -1,4 +1,3 @@
-"""Compare base vs fine-tuned model on test prompts. Detects catastrophic forgetting."""
 import json
 from pathlib import Path
 

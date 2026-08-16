@@ -1,4 +1,3 @@
-"""Quick smoke-test: creates a minimal PDF, uploads it, and runs a query."""
 import io
 import sys
 import httpx

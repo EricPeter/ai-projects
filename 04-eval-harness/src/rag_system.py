@@ -1,4 +1,3 @@
-"""Minimal in-memory RAG system used as the system under test."""
 from dataclasses import dataclass
 
 import anthropic

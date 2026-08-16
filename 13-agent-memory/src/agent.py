@@ -12,7 +12,7 @@ def chat(session_id: str, user_id: str, message: str) -> str:
 
     if len(recent_turns) >= 8:
         summary = compress_turns(recent_turns[:-4])
-        compressed_turns = [{"role": "user", "content": f"[Earlier summary: {summary}}"}, *recent_turns[-4:]]
+        compressed_turns = [{"role": "user", "content": f"[Earlier summary: {summary}]"}, *recent_turns[-4:]]
     else:
         compressed_turns = recent_turns
 

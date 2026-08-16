@@ -1,4 +1,3 @@
-"""End-to-end demo: ingest sample text, run 3 queries."""
 import httpx
 
 API = "http://localhost:8007"

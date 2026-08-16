@@ -27,7 +27,8 @@ class InjectionResult:
 
 def detect(text: str) -> InjectionResult:
     matches = [p.pattern for p in _compiled if p.search(text)]
-    confidence = min(1.0, len(matches) * 0.4)
+    # One strong pattern match = 0.8 confidence; multiple matches approach 1.0
+    confidence = min(1.0, len(matches) * 0.8) if matches else 0.0
     return InjectionResult(
         is_injection=confidence >= 0.7,
         confidence=confidence,
