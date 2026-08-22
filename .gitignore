@@ -1,0 +1,28 @@
+# Secrets
+.env
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pycache
+.pdm-python
+*.egg-info/
+.venv/
+dist/
+
+# IDE
+.idea/
+
+# Logs
+logs/
+
+# Lock files (project-level, keep root-level if desired)
+**/uv.lock
+**/pdm.lock
+
+# Data / artifacts
+*.db
+*.sqlite
+data/*.jsonl
+outputs/

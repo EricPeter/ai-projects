@@ -1,0 +1,20 @@
+services:
+  api:
+    build: .
+    ports: ["8021:8021"]
+    volumes: ["./models:/models"]
+    environment:
+      MODEL_DIR: /models
+    depends_on: [prometheus]
+
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    ports: ["9090:9090"]
+    volumes: ["./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml"]
+
+  grafana:
+    image: grafana/grafana:10.3.0
+    ports: ["3000:3000"]
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin

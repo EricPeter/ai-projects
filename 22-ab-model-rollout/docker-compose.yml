@@ -1,0 +1,39 @@
+services:
+  router:
+    build: .
+    ports: ["8022:8022"]
+    environment:
+      MODEL_A_URL: http://model-a:8000
+      MODEL_B_URL: http://model-b:8001
+      TRAFFIC_SPLIT: "0.1"
+    depends_on: [model-a, model-b]
+
+  model-a:
+    build: .
+    command: uvicorn src.model_stub:app --host 0.0.0.0 --port 8000
+    environment:
+      MODEL_ID: model-a
+      MODEL_LATENCY_MEAN: "0.10"
+      MODEL_LATENCY_STD: "0.02"
+      MODEL_ERROR_RATE: "0.01"
+
+  model-b:
+    build: .
+    command: uvicorn src.model_stub:app --host 0.0.0.0 --port 8001
+    environment:
+      MODEL_ID: model-b
+      MODEL_LATENCY_MEAN: "0.08"   # B is faster — should win
+      MODEL_LATENCY_STD: "0.015"
+      MODEL_ERROR_RATE: "0.02"
+
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    ports: ["9090:9090"]
+    volumes: ["./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml"]
+
+  grafana:
+    image: grafana/grafana:10.3.0
+    ports: ["3000:3000"]
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin

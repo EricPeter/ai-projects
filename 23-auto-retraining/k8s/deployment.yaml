@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auto-retraining
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auto-retraining
+  template:
+    metadata:
+      labels:
+        app: auto-retraining
+    spec:
+      containers:
+        - name: pipeline
+          image: ghcr.io/your-org/auto-retraining:latest
+          env:
+            - name: RETRAIN_INTERVAL_S
+              value: "3600"
+            - name: MIN_ACCURACY
+              value: "0.85"
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 4Gi
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: retraining-data-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: retraining-data-pvc
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 20Gi

@@ -1,0 +1,15 @@
+services:
+  pipeline:
+    build: .
+    volumes: ["./data:/app/data"]
+    environment:
+      RETRAIN_INTERVAL_S: "3600"
+      MIN_ACCURACY: "0.85"
+      MAX_LATENCY_P95_MS: "500"
+      MIN_LABELED_SAMPLES: "50"
+
+  api:
+    build: .
+    command: uvicorn src.api:app --host 0.0.0.0 --port 8023
+    ports: ["8023:8023"]
+    volumes: ["./data:/app/data"]

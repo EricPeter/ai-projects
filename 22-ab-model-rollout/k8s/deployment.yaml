@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ab-router
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ab-router
+  template:
+    metadata:
+      labels:
+        app: ab-router
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8022"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: router
+          image: ghcr.io/your-org/ab-model-rollout:latest
+          ports:
+            - containerPort: 8022
+          env:
+            - name: MODEL_A_URL
+              value: http://model-a-svc:8000
+            - name: MODEL_B_URL
+              value: http://model-b-svc:8001
+            - name: TRAFFIC_SPLIT
+              value: "0.1"
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8022
+            initialDelaySeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ab-router-svc
+spec:
+  selector:
+    app: ab-router
+  ports:
+    - port: 8022
+      targetPort: 8022
