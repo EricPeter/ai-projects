@@ -44,7 +44,7 @@ def train():
         per_device_eval_batch_size=4,
         warmup_steps=10,
         logging_steps=10,
-        evaluation_strategy="epoch",
+        eval_strategy="epoch",
         save_strategy="epoch",
         load_best_model_at_end=True,
         report_to="wandb" if os.getenv("WANDB_API_KEY") else "none",

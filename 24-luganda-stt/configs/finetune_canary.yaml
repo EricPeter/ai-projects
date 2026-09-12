@@ -1,0 +1,89 @@
+# Fine-tune Canary-1B-Flash on Luganda speech.
+# Run with: python scripts/finetune_canary.py --config configs/finetune_canary.yaml
+#
+# IMPORTANT NOTES ON THIS RECIPE
+# ------------------------------
+# 1. Canary / EncDecMultiTaskModel does NOT support LoRA/PEFT adapters. In NeMo,
+#    adapter/LoRA fine-tuning is implemented for CTC & RNN-T/TDT Conformers and
+#    for NLP/LLM models, not for the AED multitask model. We therefore do a
+#    normal fine-tune of the pretrained weights, optionally freezing the encoder
+#    (freeze_encoder: true) to cut memory and stabilise low-resource training.
+# 2. Canary-1B-Flash only ships prompt/language tokens for en/de/fr/es. Luganda
+#    has no token, so we map it onto the English slot (source_lang/target_lang
+#    "en"): Canary's BPE tokenizer already covers Latin-script Luganda text, and
+#    the model learns the new vocabulary/acoustics during fine-tuning. The
+#    manifests therefore carry source_lang/target_lang "en" (see prepare_data.py).
+# 3. Canary uses Lhotse dataloading (use_lhotse: true).
+
+name: canary_luganda_finetune
+
+# Pretrained weights to start from. Use init_from_nemo_model for a local .nemo.
+init_from_pretrained_model: nvidia/canary-1b-flash
+init_from_nemo_model: null
+
+model:
+  sample_rate: 16000
+  prompt_format: canary
+
+  # Freeze the acoustic encoder for the whole run (recommended for small data).
+  # Set false for a full fine-tune once you have more hours of speech.
+  freeze_encoder: true
+
+  train_ds:
+    use_lhotse: true
+    manifest_filepath: data/manifests/train.json
+    sample_rate: ${model.sample_rate}
+    batch_size: 8
+    shuffle: true
+    num_workers: 4
+    pin_memory: true
+    use_bucketing: false
+    text_field: text
+    lang_field: target_lang
+
+  validation_ds:
+    use_lhotse: true
+    manifest_filepath: data/manifests/dev.json
+    sample_rate: ${model.sample_rate}
+    batch_size: 8
+    shuffle: false
+    num_workers: 4
+    pin_memory: true
+    use_bucketing: false
+    text_field: text
+    lang_field: target_lang
+
+  optim:
+    name: adamw
+    # Fine-tuning LR must be far below from-scratch training (1e-4..1e-5).
+    lr: 1e-5
+    betas: [0.9, 0.98]
+    weight_decay: 1e-3
+    sched:
+      name: CosineAnnealing
+      warmup_steps: 500
+      min_lr: 1e-7
+
+trainer:
+  devices: 1
+  accelerator: gpu
+  max_epochs: 20
+  precision: bf16-mixed
+  log_every_n_steps: 50
+  val_check_interval: 1.0
+  gradient_clip_val: 1.0
+  accumulate_grad_batches: 4   # effective batch = 32
+  enable_checkpointing: false  # provided by exp_manager
+  logger: false                # provided by exp_manager
+
+exp_manager:
+  exp_dir: outputs/canary_luganda
+  name: ${name}
+  create_checkpoint_callback: true
+  checkpoint_callback_params:
+    monitor: val_wer
+    mode: min
+    save_top_k: 3
+    save_best_model: true
+  resume_if_exists: true
+  resume_ignore_no_checkpoint: true

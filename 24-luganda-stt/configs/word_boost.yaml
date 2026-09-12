@@ -1,0 +1,27 @@
+# Word boosting configuration for GPU-PB (GPU Prefix Beam) decoding.
+# GPU-PB is the recommended approach in NeMo 3.x for CTC/RNN-T/AED models.
+#
+# Word lists live in data/word_lists/.  Each file is one word per line.
+# They are merged at runtime and passed to the decoder.
+
+boosting:
+  # Boost factor — how strongly to prefer listed words over beam alternatives.
+  # 10–20 is typical; higher values risk hallucination of boosted words.
+  boost_factor: 15.0
+
+  word_list_files:
+    - data/word_lists/luganda_medical.txt    # health domain (for 19-uganda-health-bot overlap)
+    - data/word_lists/luganda_common.txt     # high-frequency Luganda words
+    - data/word_lists/luganda_names.txt      # proper nouns: people, places
+    - data/word_lists/luganda_numbers.txt    # number words
+
+  # Prefix beam search config (used when GPU-PB is active)
+  beam:
+    beam_size: 8
+    use_cuda_graph_decoder: false   # set true on A100/H100 for speed
+    allow_cuda_graphs: false
+
+  # CTC word spotter fallback (used when AED beam search is unavailable)
+  ctc_ws:
+    enabled: false
+    threshold: 0.5

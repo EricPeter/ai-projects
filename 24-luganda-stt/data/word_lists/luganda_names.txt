@@ -1,0 +1,46 @@
+# Luganda proper nouns — people names, place names, clans
+# Place names
+Kampala
+Wakiso
+Mukono
+Entebbe
+Jinja
+Masaka
+Mbarara
+Gulu
+Lira
+Mbale
+Soroti
+Arua
+Uganda
+Buganda
+Busoga
+Bunyoro
+Ankole
+Toro
+# Clan names (Buganda)
+Nkima
+Ngo
+Ngabi
+Mbogo
+Lugave
+Njaza
+Fumbe
+Nkejje
+Kasimba
+Mamba
+Nvuma
+Musu
+# Common given names
+Namukasa
+Nakato
+Babirye
+Wasswa
+Kato
+Mukasa
+Ssemakula
+Namutebi
+Nalugo
+Nalwoga
+Nakayiza
+Namusoke

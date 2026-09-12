@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+.venv/
+
+# Secrets / local config
+.env
+
+# Model + training artifacts
+outputs/
+*.nemo
+*.ckpt
+data/tokenizers/
+
+# Regenerable data (see scripts/prepare_data.py)
+data/manifests/audio/
+
+# Regression baselines are machine-local
+tests/baselines/*.json

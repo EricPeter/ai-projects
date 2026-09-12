@@ -35,7 +35,7 @@ export function ChatInterface() {
           <div className="flex justify-center my-4">
             <div className="bg-red-900/30 border border-red-700 rounded-lg px-4 py-3 text-sm text-red-300 flex items-center gap-3">
               <span>Something went wrong.</span>
-              <button onClick={reload} className="underline hover:no-underline">Retry</button>
+              <button onClick={() => reload()} className="underline hover:no-underline">Retry</button>
             </div>
           </div>
         )}

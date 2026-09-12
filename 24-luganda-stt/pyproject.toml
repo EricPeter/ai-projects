@@ -1,0 +1,42 @@
+[project]
+name = "luganda-stt"
+version = "0.1.0"
+description = "Luganda speech-to-text + translation with NeMo Canary, SpeechLM2, word boosting and spell checking"
+requires-python = ">=3.10"
+dependencies = [
+    # NeMo — full suite: ASR, diarization, NLP (punct), SpeechLM2, ITN
+    "nemo_toolkit[all]>=2.0.0",
+    "nemo_text_processing>=1.0.0",
+    # FastAPI server
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "python-multipart>=0.0.9",
+    # Spell checker
+    "symspellpy>=6.7.7",
+    # Audio I/O
+    "soundfile>=0.12.1",
+    "librosa>=0.10.2",
+    "numpy>=1.26.0",
+    # Data preparation
+    "datasets>=2.20.0",
+    "huggingface-hub>=0.24.0",
+    # Utilities
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.3.0",
+    "httpx>=0.27.0",
+    "tqdm>=4.66.0",
+    "omegaconf>=2.3.0",
+    # Testing
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

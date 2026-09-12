@@ -52,6 +52,7 @@ declare -a PROJECTS=(
   "21-model-serving|docker|8021|/health||"
   "22-ab-model-rollout|docker|8022|/health|bash scripts/run_experiment.sh 200|"
   "23-auto-retraining|docker|8023|/health|uv run python scripts/simulate_drift.py --clean 30 --drift 30 --interval 0.05|"
+  "24-luganda-stt|python|||bash scripts/run_pipeline.sh|Requires NVIDIA GPU and nvidia/canary-1b-flash checkpoint"
 )
 
 declare -a SUMMARY_NAMES=()
@@ -115,6 +116,18 @@ wait_healthy() {
 
 run_docker() {
   local dir="$1" port="$2" health_path="$3" demo="$4" log_file="$5"
+
+  # Validate config — catches missing .env files before attempting to start
+  local config_err
+  if ! config_err=$(docker compose config 2>&1 >/dev/null); then
+    if echo "$config_err" | grep -qi "env file.*not found\|not found.*\.env\|no such file"; then
+      log "  ${YELLOW}⏭  Missing .env — add API keys to $(basename "$dir")/.env to run this project${RESET}"
+      return 2
+    fi
+    log "  ${RED}docker compose config failed:${RESET}"
+    log "    $config_err"
+    return 1
+  fi
 
   section "Build"
   # Full build output → log only (too verbose for terminal); show service table after
@@ -298,11 +311,13 @@ for entry in "${PROJECTS[@]}"; do
 
   pushd "$dir" > /dev/null
   status="FAIL"
+  _rc=0
   case "$type" in
-    docker) run_docker "$dir" "$health_port" "$health_path" "$demo" "$log_file" && status="PASS" || true ;;
-    python) run_python "$dir" "$demo" "$log_file"                                && status="PASS" || true ;;
-    node)   run_node   "$demo" "$log_file"                                       && status="PASS" || true ;;
+    docker) run_docker "$dir" "$health_port" "$health_path" "$demo" "$log_file" || _rc=$? ;;
+    python) run_python "$dir" "$demo" "$log_file"                                || _rc=$? ;;
+    node)   run_node   "$demo" "$log_file"                                       || _rc=$? ;;
   esac
+  [[ $_rc -eq 0 ]] && status="PASS" || [[ $_rc -eq 2 ]] && status="SKIP" || true
   popd > /dev/null
 
   elapsed=$((SECONDS - start_time))
@@ -312,6 +327,8 @@ for entry in "${PROJECTS[@]}"; do
   log ""
   if [[ "$status" == "PASS" ]]; then
     log "  ${GREEN}✓  done  $(fmt_time $elapsed)${RESET}"
+  elif [[ "$status" == "SKIP" ]]; then
+    log "  ${YELLOW}⏭  skipped${RESET}"
   else
     log "  ${RED}✗  failed after $(fmt_time $elapsed)${RESET}  →  $log_file"
   fi

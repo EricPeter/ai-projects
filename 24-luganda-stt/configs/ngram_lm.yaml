@@ -1,0 +1,27 @@
+# N-gram LM configuration for NGPU-LM fusion (GPU-accelerated).
+# NGPU-LM supports CTC, RNN-T, TDT, and AED models in NeMo 3.x.
+#
+# Train the LM with:  python scripts/train_ngram_lm.py
+
+ngram_lm:
+  # Path to trained KenLM binary (.arpa or .binary)
+  lm_path: outputs/ngram_lm/luganda_5gram.arpa
+
+  order: 5         # 5-gram gives good coverage for agglutinative Luganda morphology
+  alpha: 0.5       # LM weight (higher = trust LM more)
+  beta: 1.0        # word insertion penalty
+
+  # Source text for training the LM
+  corpus_files:
+    - data/ngram/luganda_bible.txt          # public domain; good morphological coverage
+    - data/ngram/luganda_wikipedia.txt      # scraped from wiki dumps
+    - data/ngram/luganda_transcripts.txt    # from training manifests (generated at prep time)
+
+  # NGPU-LM decoder settings
+  beam_size: 128
+  use_cuda_graph_decoder: false
+
+training:
+  # kenlm lmplz settings
+  prune: [0, 0, 1, 1, 1]   # prune 1-grams+ that appear only once
+  discount_fallback: true
