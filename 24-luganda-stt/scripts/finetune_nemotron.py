@@ -17,10 +17,11 @@ Hydra-style config overrides are passed as positional args:
 Pre-requisites:
   pip install nemo_toolkit[all]>=2.1.0 peft>=0.10.0 trl>=0.9.0
 
-NeMo model class used: nemo.collections.speechlm2.SALMAutomodel
-  - Wraps the Nemotron 3.5 Transcribe speech encoder + LLM backbone.
-  - Supports LoRA via the HuggingFace PEFT library.
-  - Falls back to ModularAudioGPTModel for older NeMo versions.
+NeMo model class used: nemo.collections.asr.models.ASRModel
+  - Official class for Nemotron 3.5 Transcribe (confirmed on model card).
+  - Falls back to AutoModelForMultimodalLM (HuggingFace Transformers path).
+  - Fine-tune toolkit: https://github.com/NVIDIA-NeMo/Speech
+    examples at: examples/speechlm2/finetuning/
 """
 
 from __future__ import annotations
@@ -36,41 +37,45 @@ logger = logging.getLogger(__name__)
 
 def load_nemotron(pretrained_id: str, local_ckpt: str | None, trainer):
     """
-    Load Nemotron 3.5 Transcribe, trying SALMAutomodel (NeMo >= 2.1) first,
-    then falling back to ModularAudioGPTModel (older NeMo).
+    Load Nemotron 3.5 Transcribe.
+
+    Path 1 (preferred): nemo.collections.asr.models.ASRModel — the official
+    NeMo class for this model per the HuggingFace model card.
+
+    Path 2 (fallback): AutoModelForMultimodalLM via HuggingFace Transformers,
+    which also supports this model and is useful when NeMo is not installed.
+
+    Fine-tune recipes: https://github.com/NVIDIA-NeMo/Speech
     """
-    # Path 1: NeMo >= 2.1 SALMAutomodel
+    # Path 1: NeMo ASRModel (official)
     try:
-        from nemo.collections.speechlm2 import SALMAutomodel  # type: ignore
+        import nemo.collections.asr as nemo_asr  # type: ignore
 
         source = local_ckpt or pretrained_id
-        logger.info("Loading %s via SALMAutomodel...", source)
+        logger.info("Loading %s via nemo_asr.models.ASRModel...", source)
         if local_ckpt and Path(local_ckpt).exists():
-            return SALMAutomodel.restore_from(local_ckpt, trainer=trainer)
-        return SALMAutomodel.from_pretrained(source, trainer=trainer)
+            return nemo_asr.models.ASRModel.restore_from(local_ckpt, trainer=trainer)
+        return nemo_asr.models.ASRModel.from_pretrained(source, trainer=trainer)
 
     except ImportError:
         pass
 
-    # Path 2: NeMo multimodal SpeechLLM (older API)
+    # Path 2: HuggingFace Transformers AutoModelForMultimodalLM
     try:
-        from nemo.collections.multimodal.speech_llm.models.modular_models import (  # type: ignore
-            ModularAudioGPTModel,
-        )
+        from transformers import AutoModelForMultimodalLM  # type: ignore
 
         source = local_ckpt or pretrained_id
-        logger.info("Loading %s via ModularAudioGPTModel...", source)
-        if local_ckpt and Path(local_ckpt).exists():
-            return ModularAudioGPTModel.restore_from(local_ckpt, trainer=trainer)
-        return ModularAudioGPTModel.from_pretrained(source, trainer=trainer)
+        logger.info("Loading %s via AutoModelForMultimodalLM...", source)
+        return AutoModelForMultimodalLM.from_pretrained(source, device_map="auto", torch_dtype="auto")
 
     except ImportError:
         pass
 
     raise SystemExit(
-        "Could not find a NeMo SpeechLLM model class.\n"
-        "Install: pip install nemo_toolkit[all]>=2.1.0\n"
-        "NeMo docs: https://github.com/NVIDIA/NeMo"
+        "Could not load Nemotron 3.5 Transcribe.\n"
+        "Install NeMo:        pip install nemo_toolkit[all]>=2.1.0\n"
+        "Or Transformers:     pip install transformers>=4.47.0\n"
+        "Fine-tune toolkit:   https://github.com/NVIDIA-NeMo/Speech"
     )
 
 

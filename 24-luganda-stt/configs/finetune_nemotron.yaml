@@ -1,10 +1,10 @@
 # Fine-tune NVIDIA Nemotron 3.5 Transcribe on Luganda + other Ugandan languages.
 #
-# Architecture: Transformer speech encoder → frozen Nemotron 3 Diarization →
-#               Nemotron 3.5 Lightning 30B-A3B hybrid Mamba-Transformer MoE LLM
-#               (~4.3B active params, 30B total parameters)
+# Architecture: Mamba-2–Transformer hybrid MoE LLM with Parallel Expert Encoder
+#               34B total params, 4.3B active params
 # License: OpenMDW-1.1 (fine-tuning permitted)
-# HuggingFace: https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Transcribe
+# HuggingFace: https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B
+# Fine-tune toolkit: https://github.com/NVIDIA-NeMo/Speech (examples/speechlm2/finetuning/)
 #
 # Run:
 #   1. python scripts/prepare_data_multilang.py        # ~20–60 min depending on bandwidth
@@ -40,7 +40,7 @@ name: nemotron_ugandan_sft
 
 # ── Model checkpoints ─────────────────────────────────────────────────────────
 # BF16 base. Swap for nvidia/NVIDIA-Nemotron-3.5-Transcribe-FP8 on H100/A100.
-pretrained_model: nvidia/NVIDIA-Nemotron-3.5-Transcribe
+pretrained_model: nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B
 local_checkpoint: null    # override with a local HF snapshot dir or .nemo path
 
 model:
