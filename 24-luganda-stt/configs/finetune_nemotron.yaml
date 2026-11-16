@@ -1,0 +1,147 @@
+# Fine-tune NVIDIA Nemotron 3.5 Transcribe on Luganda + other Ugandan languages.
+#
+# Architecture: Transformer speech encoder → frozen Nemotron 3 Diarization →
+#               Nemotron 3.5 Lightning 30B-A3B hybrid Mamba-Transformer MoE LLM
+#               (~4.3B active params, 30B total parameters)
+# License: OpenMDW-1.1 (fine-tuning permitted)
+# HuggingFace: https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Transcribe
+#
+# Run:
+#   1. python scripts/prepare_data_multilang.py        # ~20–60 min depending on bandwidth
+#   2. python scripts/finetune_nemotron.py             # SFT stage
+#   3. python scripts/finetune_nemotron.py --stage rl  # optional RL stage
+#
+# Hydra overrides:
+#   trainer.devices=2 model.lora.r=64 model.optim.lr=1e-4
+#
+# Design decisions
+# ----------------
+# 1. Freeze audio encoder: the speech encoder already generalises well across
+#    languages; we only adapt the LLM backbone to Ugandan acoustics and spelling.
+#    Saves ~8 GB VRAM vs full fine-tune. Set freeze_audio_encoder: false for
+#    > 100 h of data.
+#
+# 2. LoRA on LLM backbone (rank 32): unlike Canary/AED, the Nemotron LLM
+#    backbone supports PEFT. Rank 32 / alpha 64 cuts VRAM to ~12 GB on a
+#    single A100-40 GB (vs ~24 GB for full fine-tune).
+#    Bump r to 64 / alpha 128 if you have more than ~50 h of speech.
+#
+# 3. Language-aware instruction: each manifest record carries a `context` field
+#    (e.g. "Transcribe the following Luganda audio verbatim.") that is prepended
+#    to the input at training time, so the model learns per-language conventions
+#    in one SFT pass.  See prepare_data_multilang.py for the manifest format.
+#
+# 4. SFT-only by default: the RL stage (GRPO with WER reward) is guarded by
+#    --stage rl. Run SFT to convergence first (val_wer plateau for 2–3 epochs),
+#    then add RL.  Typical total cost on a single A100-40 GB:
+#      SFT: 1–3 h  |  RL: 0.5–1 h
+
+name: nemotron_ugandan_sft
+
+# ── Model checkpoints ─────────────────────────────────────────────────────────
+# BF16 base. Swap for nvidia/NVIDIA-Nemotron-3.5-Transcribe-FP8 on H100/A100.
+pretrained_model: nvidia/NVIDIA-Nemotron-3.5-Transcribe
+local_checkpoint: null    # override with a local HF snapshot dir or .nemo path
+
+model:
+  sample_rate: 16000
+
+  # Freeze the audio encoder for the whole SFT run (recommended for < 50 h data).
+  # Only the LLM backbone (via LoRA) and the cross-modal projection are trained.
+  freeze_audio_encoder: true
+
+  # ── LoRA config (applied to the LLM backbone only) ──────────────────────────
+  lora:
+    enable: true
+    # Attention + feed-forward projections — standard full-attention LoRA target set.
+    target_modules:
+      - q_proj
+      - k_proj
+      - v_proj
+      - o_proj
+      - gate_proj
+      - up_proj
+      - down_proj
+    r: 32                # rank; increase to 64 for > 50 h of data
+    lora_alpha: 64       # scaling = alpha / r = 2.0
+    lora_dropout: 0.05
+    bias: none           # do not add LoRA to bias terms
+
+  train_ds:
+    manifest_filepath: data/manifests/multilang/multilang_train.json
+    sample_rate: ${model.sample_rate}
+    batch_size: 4         # per-GPU; effective batch = 4 * 8 accum = 32
+    shuffle: true
+    num_workers: 4
+    pin_memory: true
+    max_duration: 30.0
+    min_duration: 0.5
+    # Context field in the manifest becomes the instruction prefix at training time.
+    context_key: context
+    answer_key: answer
+
+  validation_ds:
+    manifest_filepath: data/manifests/multilang/multilang_dev.json
+    sample_rate: ${model.sample_rate}
+    batch_size: 4
+    shuffle: false
+    num_workers: 4
+    pin_memory: true
+    max_duration: 30.0
+    min_duration: 0.5
+    context_key: context
+    answer_key: answer
+
+  optim:
+    name: adamw
+    # LoRA fine-tuning tolerates a slightly higher LR than full fine-tune
+    # because only a small fraction of parameters are updated.
+    lr: 5e-5
+    betas: [0.9, 0.95]
+    weight_decay: 1e-2
+    sched:
+      name: CosineAnnealing
+      warmup_steps: 200
+      min_lr: 1e-7
+
+trainer:
+  devices: 1
+  accelerator: gpu
+  max_epochs: 10
+  precision: bf16-mixed
+  log_every_n_steps: 25
+  val_check_interval: 0.5    # validate twice per epoch
+  gradient_clip_val: 1.0
+  accumulate_grad_batches: 8  # effective batch = 32
+  enable_checkpointing: false # handled by exp_manager
+  logger: false               # handled by exp_manager
+
+exp_manager:
+  exp_dir: outputs/nemotron_ugandan
+  name: ${name}
+  create_tensorboard_logger: true
+  create_checkpoint_callback: true
+  checkpoint_callback_params:
+    monitor: val_wer
+    mode: min
+    save_top_k: 3
+    save_best_model: true
+  resume_if_exists: true
+  resume_ignore_no_checkpoint: true
+
+# ── RL stage ─────────────────────────────────────────────────────────────────
+# Activated by: python scripts/finetune_nemotron.py --stage rl
+# Run only after SFT val_wer has plateaued (usually epoch 7–10).
+#
+# GRPO (Group Relative Policy Optimisation) is preferred over PPO for ASR because
+# it uses a sequence-level WER reward with no value-network overhead.
+rl:
+  algorithm: grpo
+  reward_metric: wer           # wer | cer  (cer preferred for agglutinative langs)
+  group_size: 4                # rollouts sampled per prompt during GRPO update
+  kl_coef: 0.05                # KL penalty vs SFT reference policy
+  sft_checkpoint: null         # filled automatically by finetune_nemotron.py
+  optim:
+    lr: 5e-7                   # much lower than SFT; RL is a fine correction
+    max_steps: 500
+    warmup_steps: 50
